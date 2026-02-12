@@ -37,14 +37,10 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
     setError(null)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Not authenticated')
-
       const response = await fetch(`/api/accounts/${account.id}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ is_active: !account.is_active })
       })
@@ -68,14 +64,8 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
     setError(null)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Not authenticated')
-
       const response = await fetch(`/api/accounts/${account.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
+        method: 'DELETE'
       })
 
       if (!response.ok) {
@@ -99,9 +89,6 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
     setError(null)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Not authenticated')
-
       const updateData: { account_name: string; password?: string } = {
         account_name: editFormData.account_name
       }
@@ -112,8 +99,7 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
       const response = await fetch(`/api/accounts/${account.id}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(updateData)
       })
