@@ -18,33 +18,13 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // Get authenticated user
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No authorization header' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Invalid token' },
-        { status: 401 }
-      );
-    }
-
-    // Fetch account
+    // Fetch account (no authentication required)
     const account = await getAccountById(id);
 
-    // Verify ownership
-    if (account.user_id !== user.id) {
+    if (!account) {
       return NextResponse.json(
-        { error: 'Forbidden - You do not own this account' },
-        { status: 403 }
+        { error: 'Account not found' },
+        { status: 404 }
       );
     }
 
@@ -55,17 +35,8 @@ export async function GET(
         password: undefined,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('GET /api/accounts/[id] error:', error);
-
-    // Handle not found
-    if (error.code === 'PGRST116') {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 404 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Failed to fetch account' },
       { status: 500 }
@@ -84,36 +55,6 @@ export async function PATCH(
   try {
     const { id } = await params;
 
-    // Get authenticated user
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No authorization header' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Invalid token' },
-        { status: 401 }
-      );
-    }
-
-    // Fetch existing account
-    const existingAccount = await getAccountById(id);
-
-    // Verify ownership
-    if (existingAccount.user_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Forbidden - You do not own this account' },
-        { status: 403 }
-      );
-    }
-
     // Parse and validate request body
     const body = await request.json();
     const validationResult = updateAccountSchema.safeParse(body);
@@ -128,9 +69,10 @@ export async function PATCH(
       );
     }
 
-    // Update account (password will be encrypted in the helper if provided)
+    // Update account (no authentication required)
     const updatedAccount = await updateAccount(id, validationResult.data);
 
+    // Don't return encrypted password
     return NextResponse.json({
       account: {
         ...updatedAccount,
@@ -138,16 +80,8 @@ export async function PATCH(
       },
       message: 'Account updated successfully',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('PATCH /api/accounts/[id] error:', error);
-
-    if (error.code === 'PGRST116') {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 404 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Failed to update account' },
       { status: 500 }
@@ -157,7 +91,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/accounts/[id]
- * Delete an account (cascades to conversations and messages)
+ * Delete an account
  */
 export async function DELETE(
   request: NextRequest,
@@ -166,52 +100,14 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Get authenticated user
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No authorization header' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Invalid token' },
-        { status: 401 }
-      );
-    }
-
-    // Fetch existing account
-    const existingAccount = await getAccountById(id);
-
-    // Verify ownership
-    if (existingAccount.user_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Forbidden - You do not own this account' },
-        { status: 403 }
-      );
-    }
-
-    // Delete account
+    // Delete account (no authentication required)
     await deleteAccount(id);
 
     return NextResponse.json({
       message: 'Account deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('DELETE /api/accounts/[id] error:', error);
-
-    if (error.code === 'PGRST116') {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 404 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Failed to delete account' },
       { status: 500 }

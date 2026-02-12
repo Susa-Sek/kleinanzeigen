@@ -10,27 +10,13 @@ import type { Account } from '@/types';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get authenticated user from Supabase Auth
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No authorization header' },
-        { status: 401 }
-      );
-    }
+    // Fetch all accounts (no authentication required)
+    const { data: accounts, error } = await supabase
+      .from('accounts')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Invalid token' },
-        { status: 401 }
-      );
-    }
-
-    // Fetch accounts for this user
-    const accounts = await getAccountsByUserId(user.id);
+    if (error) throw error;
 
     // Don't return encrypted passwords in the response
     const sanitizedAccounts = accounts.map((account) => ({
@@ -57,25 +43,6 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No authorization header' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Invalid token' },
-        { status: 401 }
-      );
-    }
-
     // Parse and validate request body
     const body = await request.json();
     const validationResult = createAccountSchema.safeParse(body);
@@ -92,9 +59,13 @@ export async function POST(request: NextRequest) {
 
     const { email, password, account_name } = validationResult.data;
 
-    // Check if account already exists for this user
-    const existingAccounts = await getAccountsByUserId(user.id);
-    const duplicate = existingAccounts.find((acc) => acc.email === email);
+    // Check if account already exists
+    const { data: existingAccounts } = await supabase
+      .from('accounts')
+      .select('*')
+      .eq('email', email);
+
+    const duplicate = existingAccounts?.find((acc) => acc.email === email);
 
     if (duplicate) {
       return NextResponse.json(
@@ -105,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Create account (password will be encrypted in the helper)
     const account = await createAccount({
-      user_id: user.id,
+      user_id: null, // No authentication required
       email,
       password,
       account_name,
