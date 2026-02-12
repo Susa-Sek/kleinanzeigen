@@ -2,7 +2,7 @@
 
 export interface Account {
   id: string;
-  user_id: string;
+  user_id: string | null; // Nullable - no authentication required
   email: string;
   password: string;
   account_name: string;
