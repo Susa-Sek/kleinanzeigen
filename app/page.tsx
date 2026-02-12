@@ -12,16 +12,16 @@ export default function Home() {
         </p>
         <div className="mt-10 flex gap-4">
           <a
-            href="/dashboard"
+            href="/auth/login"
             className="rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition-colors"
           >
             Get Started
           </a>
           <a
-            href="/docs"
+            href="/auth/login"
             className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-md hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
           >
-            Learn More
+            Login
           </a>
         </div>
       </main>
