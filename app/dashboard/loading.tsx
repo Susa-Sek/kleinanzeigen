@@ -1,0 +1,41 @@
+import { Skeleton } from '@/components/ui/skeleton'
+
+export default function DashboardLoading() {
+  return (
+    <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div className="mb-8">
+        <Skeleton className="h-10 w-64 mb-2" />
+        <Skeleton className="h-5 w-96" />
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="border rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-4 rounded" />
+            </div>
+            <Skeleton className="h-8 w-16 mb-2" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <Skeleton className="h-8 w-48 mb-4" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border rounded-lg p-6">
+              <Skeleton className="h-12 w-12 rounded-lg mb-4" />
+              <Skeleton className="h-6 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-full mb-4" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
