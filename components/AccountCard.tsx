@@ -12,6 +12,7 @@ import { Trash2, Edit2, Loader2, AlertCircle, CheckCircle2, XCircle, Clock, Eye,
 import { Account } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import { showSuccess } from '@/lib/toast'
+import { supabase } from '@/lib/supabase'
 
 interface AccountCardProps {
   account: Account
@@ -37,9 +38,15 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
     setError(null)
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
+
       const response = await fetch(`/api/accounts/${account.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ is_active: !account.is_active })
       })
 
@@ -62,8 +69,14 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
     setError(null)
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
+
       const response = await fetch(`/api/accounts/${account.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
       })
 
       if (!response.ok) {
@@ -87,6 +100,9 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
     setError(null)
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
+
       const updateData: { account_name: string; password?: string } = {
         account_name: editFormData.account_name
       }
@@ -96,7 +112,10 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
 
       const response = await fetch(`/api/accounts/${account.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify(updateData)
       })
 
