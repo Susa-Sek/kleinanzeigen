@@ -12,7 +12,6 @@ import { Trash2, Edit2, Loader2, AlertCircle, CheckCircle2, XCircle, Clock, Eye,
 import { Account } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import { showSuccess } from '@/lib/toast'
-import { supabase } from '@/lib/supabase'
 
 interface AccountCardProps {
   account: Account

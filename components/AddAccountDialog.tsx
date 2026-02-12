@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { showSuccess } from '@/lib/toast'
-import { supabase } from '@/lib/supabase'
 
 interface AddAccountDialogProps {
   onAccountAdded?: () => void
@@ -32,18 +31,10 @@ export function AddAccountDialog({ onAccountAdded, maxAccountsReached = false }:
     setIsLoading(true)
 
     try {
-      // Get the current session token
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (!session) {
-        throw new Error('Not authenticated. Please log in again.')
-      }
-
       const response = await fetch('/api/accounts', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       })
