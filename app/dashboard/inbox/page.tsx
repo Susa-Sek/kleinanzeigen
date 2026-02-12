@@ -12,7 +12,7 @@ import { Account } from '@/types'
 
 export default function InboxPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('')
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('all')
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
 
@@ -22,7 +22,7 @@ export default function InboxPage() {
     hasMore,
     loadMore
   } = useConversations({
-    accountId: selectedAccountId || undefined,
+    accountId: selectedAccountId === 'all' ? undefined : selectedAccountId,
     unreadOnly
   })
 
@@ -70,7 +70,7 @@ export default function InboxPage() {
                 <SelectValue placeholder="All Accounts" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Accounts</SelectItem>
+                <SelectItem value="all">All Accounts</SelectItem>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.account_name || account.email}

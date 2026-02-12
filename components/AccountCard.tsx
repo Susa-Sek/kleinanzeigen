@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
-import { Trash2, Edit2, Loader2, AlertCircle, CheckCircle2, XCircle, Clock, Eye, EyeOff } from 'lucide-react'
+import { Trash2, Edit2, Loader2, AlertCircle, CheckCircle2, XCircle, Clock, Eye, EyeOff, RefreshCw } from 'lucide-react'
 import { Account } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import { showSuccess } from '@/lib/toast'
@@ -22,6 +22,7 @@ interface AccountCardProps {
 export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -120,6 +121,33 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
     }
   }
 
+  const handleSync = async () => {
+    setIsSyncing(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ account_id: account.id })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to sync account')
+      }
+
+      showSuccess('Sync started successfully', 'Messages are being fetched...')
+      onUpdate?.()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
   const getStatusIcon = () => {
     if (!account.is_active) {
       return <XCircle className="h-4 w-4 text-gray-500" />
@@ -171,6 +199,15 @@ export function AccountCard({ account, onUpdate, onDelete }: AccountCardProps) {
           </div>
 
           <div className="flex gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSync}
+              disabled={isSyncing || !account.is_active}
+              title="Sync messages now"
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            </Button>
             <Button
               variant="outline"
               size="sm"
